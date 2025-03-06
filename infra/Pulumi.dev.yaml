@@ -1,0 +1,2 @@
+environment:
+  - creds/aws
