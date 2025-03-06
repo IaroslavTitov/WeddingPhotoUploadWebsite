@@ -1,0 +1,8 @@
+name: PhotoUploadSite
+description: A simple site to upload photos into S3
+runtime:
+  name: nodejs
+  options:
+    packagemanager: yarn
+config:
+  aws:region: us-west-2
