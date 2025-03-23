@@ -30,10 +30,11 @@ export abstract class S3Helper {
 
         const promises: Promise<PutObjectCommandOutput | null>[] = [];
         let failCount = 0;
+        const timestamp: number = Date.now();
         for (const file of files) {
-            const randomString = crypto.randomBytes(20).toString("hex");
+            const randomString = crypto.randomBytes(5).toString("hex");
             const fileFormat = file.type.split("/")[1];
-            const fileName = randomString + "." + fileFormat;
+            const fileName = timestamp + "_" + randomString + "." + fileFormat;
             const fileBytes = await file.bytes();
 
             const putRequest = new PutObjectCommand({
