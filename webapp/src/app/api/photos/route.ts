@@ -1,5 +1,5 @@
 import { PasswordHelper } from "@/services/passwordHelper";
-import { S3Helper, UploadResult } from "@/services/s3helper";
+import { ByteFile, S3Helper, UploadResult } from "@/services/s3helper";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -32,10 +32,11 @@ export async function POST(request: NextRequest) {
     let uploadResult: UploadResult | null = null;
     try {
         const formData = await request.formData();
-        const files: File[] = [];
+        const files: ByteFile[] = [];
         for (const value of formData.values()) {
-            if (value instanceof File) {
-                files.push(value);
+            const file = value as ByteFile;
+            if (file) {
+                files.push(file);
             }
         }
 

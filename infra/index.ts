@@ -1,7 +1,8 @@
 import * as aws from "@pulumi/aws";
+import * as awsx from "@pulumi/awsx";
 import * as pulumi from "@pulumi/pulumi";
 
-// Photo bucket
+//#region Photo bucket
 const photoBucket = new aws.s3.BucketV2("photoBucket");
 
 const photoBucketPublicAccessBlock = new aws.s3.BucketPublicAccessBlock(
@@ -24,8 +25,19 @@ const photoBucketCorsConfiguration = new aws.s3.BucketCorsConfigurationV2(
         allowedHeaders: ["*"],
         allowedMethods: ["GET", "HEAD"],
         allowedOrigins: ["*"],
+        maxAgeSeconds: 3000,
       },
     ],
+  }
+);
+
+const photoBucketOwnershipControls = new aws.s3.BucketOwnershipControls(
+  "photoBucketOwnershipControls",
+  {
+    bucket: photoBucket.bucket,
+    rule: {
+      objectOwnership: "ObjectWriter",
+    },
   }
 );
 
@@ -51,6 +63,7 @@ const photoBucketPolicy = new aws.s3.BucketPolicy(
     dependsOn: photoBucketPublicAccessBlock,
   }
 );
+//#endregion
 
 //#region Web user
 const webUser = new aws.iam.User("webUser");
@@ -89,6 +102,81 @@ const webUserPhotoBucketPolicyAttachment = new aws.iam.UserPolicyAttachment(
     policyArn: webUserPhotoBucketPolicy.arn,
   }
 );
+//#endregion
+
+//#region Webapp
+const ecrRepo = new aws.ecr.Repository("wedding-repo");
+
+const webappImage = new awsx.ecr.Image("webappImage", {
+  repositoryUrl: ecrRepo.repositoryUrl,
+  imageName: "wedding-photos-webapp",
+  imageTag: "latest",
+  context: "../webapp",
+});
+
+const appRunnerRole = new aws.iam.Role("appRunnerRole", {
+  assumeRolePolicy: {
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Action: "sts:AssumeRole",
+        Effect: "Allow",
+        Sid: "",
+        Principal: {
+          Service: ["build.apprunner.amazonaws.com"],
+        },
+      },
+    ],
+  },
+});
+
+const ecrAccessRolePolicy = new aws.iam.RolePolicy("ecrAccessRolePolicy", {
+  role: appRunnerRole.name,
+  policy: JSON.stringify({
+    Version: "2012-10-17",
+    Statement: [
+      {
+        Effect: "Allow",
+        Action: [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:DescribeImages",
+        ],
+        Resource: "*",
+      },
+    ],
+  }),
+});
+
+const appRunnerService = new aws.apprunner.Service("appRunnerService", {
+  serviceName: "wedding-photos-webapp",
+  sourceConfiguration: {
+    authenticationConfiguration: {
+      accessRoleArn: appRunnerRole.arn,
+    },
+    imageRepository: {
+      imageIdentifier: webappImage.imageUri,
+      imageConfiguration: {
+        port: "3000",
+      },
+      imageRepositoryType: "ECR",
+    },
+  },
+  instanceConfiguration: {
+    cpu: "256",
+    memory: "512",
+  },
+  healthCheckConfiguration: {
+    path: "/",
+    protocol: "HTTP",
+    interval: 10,
+    timeout: 5,
+    healthyThreshold: 1,
+    unhealthyThreshold: 5,
+  },
+});
 
 //#endregion
 

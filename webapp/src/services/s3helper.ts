@@ -7,6 +7,10 @@ export interface UploadResult {
     failCount: number;
 }
 
+export interface ByteFile extends File {
+    bytes(): Promise<Uint8Array>;
+}
+
 export abstract class S3Helper {
     static s3Client: S3Client;
     static REGION: string = "us-west-2";
@@ -25,7 +29,7 @@ export abstract class S3Helper {
         return this.s3Client;
     }
 
-    static async uploadPhotos(files: File[]): Promise<UploadResult> {
+    static async uploadPhotos(files: ByteFile[]): Promise<UploadResult> {
         const s3Client = await S3Helper.getS3Client();
 
         const promises: Promise<PutObjectCommandOutput | null>[] = [];

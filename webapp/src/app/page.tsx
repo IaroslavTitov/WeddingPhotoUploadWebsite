@@ -11,14 +11,14 @@ export default function Home() {
     const [photoLinks, setPhotoLinks] = useState<string[]>([]);
     const [needReload, setNeedReload] = useState<boolean>(true);
     const [unauthorized, setUnauthorized] = useState<boolean>(false);
-    const searchParams = useSearchParams();
+    const password = useSearchParams().get("password");
 
     useEffect(() => {
         async function fetchPhotos() {
             const response = await fetch("/api/photos", {
                 method: "GET",
                 headers: new Headers({
-                    Authorization: searchParams.get("password") ?? "",
+                    Authorization: password ?? "",
                 }),
             });
             if (response.ok) {
@@ -33,24 +33,19 @@ export default function Home() {
             }
         }
         fetchPhotos();
-    }, [needReload, searchParams]);
+    }, [needReload, password]);
 
-    const downloadImageFromUrl = (imageUrl: string) => {
+    const downloadImageFromUrl = async (imageUrl: string) => {
         const split = imageUrl.split("/");
         const filename = split[split.length - 1];
-        fetch(imageUrl)
-            .then((response) => response.blob())
-            .then((blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(link);
-            })
-            .catch((error) => console.error("Error downloading image:", error));
+
+        const response = await fetch(imageUrl);
+        console.log(response);
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
     };
 
     const startFileSelection = () => {
@@ -68,7 +63,7 @@ export default function Home() {
             const response = await fetch("/api/photos", {
                 method: "POST",
                 headers: new Headers({
-                    Authorization: searchParams.get("password") ?? "",
+                    Authorization: password ?? "",
                 }),
                 body: formData,
             });
@@ -94,36 +89,35 @@ export default function Home() {
             ) : (
                 <>
                     <div className={styles.title}>
-                        <div>Iaro & Tori</div>
-                        <img src="/images/vignette.png" alt="vignette" />
+                        <div className={styles.titleText}>Iaro & Tori</div>
+                        <img className={styles.titleImage} src="/images/vignette.png" alt="vignette" />
                     </div>
                     <p className={styles.greeting}>
                         Welcome to our photo gallery!
                         <br />
-                        Here you can upload your pictures from our wedding,
-                        <br />
-                        to share with us and everyone else!
-                        <br />
+                        Here you can upload your pictures from our wedding.
                     </p>
-                    <form>
+                    <form className={styles.uploadForm}>
                         <div className={styles.uploadLabel} onClick={startFileSelection}>
-                            <img src="/images/label.png" alt="label" />
-                            <p>UPLOAD</p>
+                            <img className={styles.uploadLabelImage} src="/images/label.png" alt="label" />
+                            <p className={styles.uploadLabelText}>UPLOAD</p>
                         </div>
-                        <input id="photoInput" type="file" accept="image/*" multiple onChange={filesSelected} />
+                        <input className={styles.fileInput} id="photoInput" type="file" accept="image/*" multiple onChange={filesSelected} />
                     </form>
                     {photoLinks.length > 0 && (
                         <div className={styles.photoStorage}>
                             {photoLinks.map((url, index) => (
                                 // eslint-disable-next-line @next/next/no-img-element
-                                <img key={index} src={url} alt={"photo " + index} onClick={() => setModalSource(url)} />
+                                <img className={styles.photoImage} key={index} src={url} alt={"photo " + index} onClick={() => setModalSource(url)} />
                             ))}
                         </div>
                     )}
                     {modalSource && (
                         <div className={styles.modalBox} id="modalBox" onClick={() => setModalSource(undefined)}>
-                            <img alt="modal image" src={modalSource} />
-                            <button onClick={() => downloadImageFromUrl(modalSource)}>Download</button>
+                            <img className={styles.modalImage} alt="modal image" src={modalSource} />
+                            <button className={styles.modalButton} onClick={() => downloadImageFromUrl(modalSource)}>
+                                Download
+                            </button>
                         </div>
                     )}
                 </>

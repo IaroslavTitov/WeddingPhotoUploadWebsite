@@ -7,14 +7,14 @@
         width: 100%;
         margin: 72px 0 24px 0;
 
-        div {
+        .titleText {
             font-family: "Allura", cursive;
             font-weight: 400;
             font-style: normal;
             font-size: 128px;
         }
 
-        img {
+        .titleImage {
             object-fit: contain;
             display: inline-block;
             margin-top: -60px;
@@ -28,7 +28,7 @@
         line-height: 50px;
     }
 
-    form {
+    .uploadForm {
         display: inline-block;
     }
 
@@ -40,13 +40,13 @@
         width: 200px;
         height: 150px;
 
-        img {
+        .uploadLabelImage {
             position: absolute;
             left: 0;
             width: 100%;
         }
 
-        p {
+        .uploadLabelText {
             position: absolute;
             width: 100%;
             padding-top: 24px;
@@ -55,7 +55,7 @@
         }
     }
 
-    input {
+    .fileInput {
         display: none;
     }
 
@@ -70,11 +70,12 @@
         border: 50px solid transparent;
         border-image: url("/images/frame.png") 84 84 round;
 
-        img {
+        .photoImage {
             object-fit: cover;
             max-width: 600px;
             max-height: 600px;
             flex: 1;
+            cursor: pointer;
         }
     }
 
@@ -90,7 +91,7 @@
         align-items: center;
         z-index: 1000;
 
-        img {
+        .modalImage {
             background-color: rgba(0, 0, 0, 0.3);
             padding: 5px;
             border-radius: 5px;
@@ -99,7 +100,7 @@
             object-fit: contain;
         }
 
-        button {
+        .modalButton {
             position: absolute;
             bottom: 12%;
             color: #222;
@@ -118,13 +119,15 @@
 @media (max-width: 600px) {
     .root {
         .title {
-            div {
-                font-size: 64px;
+            margin: 10vw 0 7vw 0;
+
+            .titleText {
+                font-size: 20vw;
             }
 
-            img {
-                max-width: 200px;
-                margin-top: -30px;
+            .titleImage {
+                max-width: 70vw;
+                margin-top: -13vw;
             }
         }
 
@@ -134,13 +137,24 @@
             margin-top: 0;
         }
 
+        .uploadLabel {
+            width: 100px;
+            height: 50px;
+
+            .uploadLabelText {
+                padding-top: 12px;
+                font-size: 15px;
+                color: white;
+            }
+        }
+
         .photoStorage {
             border: 25px solid transparent;
             border-image: url("/images/frame.png") 84 84 round;
             padding: 10px;
             margin: 10px;
 
-            img {
+            .photoImage {
                 max-width: 100%;
             }
         }
