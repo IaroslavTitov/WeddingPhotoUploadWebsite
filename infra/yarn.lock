@@ -809,13 +809,6 @@
     docker-classic "npm:@pulumi/docker@3.6.1"
     mime "^2.0.0"
 
-"@pulumi/command@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@pulumi/command/-/command-1.0.2.tgz#079010eab572283b49a494d9c04ec907df6ac5e2"
-  integrity sha512-1Pge79T3E2bzIAvLXuYI4uczhjpqQYgnpkvLHRag/idyCmhXCV7JP+NOXLA/7RARdr8ftuZL+BEvXpJibju7jA==
-  dependencies:
-    "@pulumi/pulumi" "^3.142.0"
-
 "@pulumi/docker-build@^0.0.8":
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/@pulumi/docker-build/-/docker-build-0.0.8.tgz#203bdd9eed062ed0d3ddd2ef275ffcc45a87b3f4"

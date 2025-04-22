@@ -38,9 +38,9 @@ export default function Home() {
     const downloadImageFromUrl = async (imageUrl: string) => {
         const split = imageUrl.split("/");
         const filename = split[split.length - 1];
-
-        const response = await fetch(imageUrl);
-        console.log(response);
+        // I don't know why, but without the query param you get intermittent CORS errors
+        // Most likely weird caching logic on AWS side
+        const response = await fetch(imageUrl + "?a=1");
         const blob = await response.blob();
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(blob);
@@ -107,7 +107,6 @@ export default function Home() {
                     {photoLinks.length > 0 && (
                         <div className={styles.photoStorage}>
                             {photoLinks.map((url, index) => (
-                                // eslint-disable-next-line @next/next/no-img-element
                                 <img className={styles.photoImage} key={index} src={url} alt={"photo " + index} onClick={() => setModalSource(url)} />
                             ))}
                         </div>
