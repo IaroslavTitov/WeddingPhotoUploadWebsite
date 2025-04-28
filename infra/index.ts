@@ -2,8 +2,17 @@ import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import * as pulumi from "@pulumi/pulumi";
 
+// Load config
+const config = new pulumi.Config();
+const WEBSITE_TITLE = config.require("websiteTitle");
+const WEBSITE_DESCRIPTION = config.require("websiteDescription");
+const WEBSITE_PASSWORD = config.require("websitePassword");
+const SERVICE_NAME = config.require("serviceName");
+
 //#region Photo bucket
-const photoBucket = new aws.s3.BucketV2("photoBucket");
+const photoBucket = new aws.s3.BucketV2("photoBucket", {
+    forceDestroy: true,
+});
 
 const photoBucketPublicAccessBlock = new aws.s3.BucketPublicAccessBlock(
     "photoBucketPublicAccessBlock",
@@ -105,13 +114,19 @@ const webUserPhotoBucketPolicyAttachment = new aws.iam.UserPolicyAttachment(
 //#endregion
 
 //#region Webapp
-const ecrRepo = new aws.ecr.Repository("wedding-repo");
+const ecrRepo = new aws.ecr.Repository("wedding-repo", {
+    forceDelete: true,
+});
 
 const webappImage = new awsx.ecr.Image("webappImage", {
     repositoryUrl: ecrRepo.repositoryUrl,
-    imageName: "wedding-photos-webapp",
+    imageName: SERVICE_NAME,
     imageTag: "latest",
     context: "../webapp",
+    args: {
+        WEBSITE_TITLE: WEBSITE_TITLE,
+        WEBSITE_DESCRIPTION: WEBSITE_DESCRIPTION,
+    },
 });
 
 const appRunnerRole = new aws.iam.Role("appRunnerRole", {
@@ -151,7 +166,7 @@ const ecrAccessRolePolicy = new aws.iam.RolePolicy("ecrAccessRolePolicy", {
 });
 
 const appRunnerService = new aws.apprunner.Service("appRunnerService", {
-    serviceName: "wedding-photos-webapp",
+    serviceName: SERVICE_NAME,
     sourceConfiguration: {
         authenticationConfiguration: {
             accessRoleArn: appRunnerRole.arn,
@@ -160,6 +175,12 @@ const appRunnerService = new aws.apprunner.Service("appRunnerService", {
             imageIdentifier: webappImage.imageUri,
             imageConfiguration: {
                 port: "3000",
+                runtimeEnvironmentVariables: {
+                    WEBSITE_PASSWORD: WEBSITE_PASSWORD,
+                    PHOTO_BUCKET_NAME: photoBucket.bucket,
+                    WEB_USER_ACCESS_KEY: webUserAccessKey.id,
+                    WEB_USER_SECRET_KEY: webUserAccessKey.secret,
+                },
             },
             imageRepositoryType: "ECR",
         },
@@ -181,5 +202,4 @@ const appRunnerService = new aws.apprunner.Service("appRunnerService", {
 //#endregion
 
 export const photoBucketName = photoBucket.bucket;
-export const webUserAccessKeyId = pulumi.secret(webUserAccessKey.id);
-export const webUserSecretAccessKey = pulumi.secret(webUserAccessKey.secret);
+export const websiteUrl = appRunnerService.serviceUrl;

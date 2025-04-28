@@ -4,6 +4,7 @@
 import styles from "./page.module.css";
 import { UploadResult } from "@/services/s3helper";
 import { useSearchParams } from "next/navigation";
+import React from "react";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -12,6 +13,8 @@ export default function Home() {
     const [needReload, setNeedReload] = useState<boolean>(true);
     const [unauthorized, setUnauthorized] = useState<boolean>(false);
     const password = useSearchParams().get("password");
+    const websiteTitle = process.env.NEXT_PUBLIC_WEBSITE_TITLE;
+    const websiteDescription = process.env.NEXT_PUBLIC_WEBSITE_DESCRIPTION!;
 
     useEffect(() => {
         async function fetchPhotos() {
@@ -89,13 +92,16 @@ export default function Home() {
             ) : (
                 <>
                     <div className={styles.title}>
-                        <div className={styles.titleText}>Iaro & Tori</div>
+                        <div className={styles.titleText}>{websiteTitle}</div>
                         <img className={styles.titleImage} src="/images/vignette.png" alt="vignette" />
                     </div>
                     <p className={styles.greeting}>
-                        Welcome to our photo gallery!
-                        <br />
-                        Here you can upload your pictures from our wedding.
+                        {websiteDescription.split("<br>").map((text, index) => (
+                            <React.Fragment key={index}>
+                                {text}
+                                <br />
+                            </React.Fragment>
+                        ))}
                     </p>
                     <form className={styles.uploadForm}>
                         <div className={styles.uploadLabel} onClick={startFileSelection}>

@@ -1,4 +1,3 @@
-import { EscHelper } from "./escHelper";
 import * as crypto from "node:crypto";
 import { _Object, ListObjectsV2Command, PutObjectCommand, PutObjectCommandOutput, S3Client } from "@aws-sdk/client-s3";
 
@@ -20,11 +19,9 @@ export abstract class S3Helper {
             return this.s3Client;
         }
 
-        await EscHelper.loadSecrets();
-
         this.s3Client = new S3Client({
             region: S3Helper.REGION,
-            credentials: { accessKeyId: EscHelper.secrets!.WEB_USER_ACCESS_KEY, secretAccessKey: EscHelper.secrets!.WEB_USER_SECRET_KEY },
+            credentials: { accessKeyId: process.env.WEB_USER_ACCESS_KEY!, secretAccessKey: process.env.WEB_USER_SECRET_KEY! },
         });
         return this.s3Client;
     }
@@ -46,7 +43,7 @@ export abstract class S3Helper {
                 Body: fileBytes,
                 ContentLength: fileBytes.length,
                 ContentType: file.type,
-                Bucket: EscHelper.secrets!.PHOTO_BUCKET_NAME,
+                Bucket: process.env.PHOTO_BUCKET_NAME!,
             });
             const upload = s3Client.send(putRequest);
 
@@ -75,7 +72,7 @@ export abstract class S3Helper {
 
             do {
                 const command: ListObjectsV2Command = new ListObjectsV2Command({
-                    Bucket: EscHelper.secrets!.PHOTO_BUCKET_NAME,
+                    Bucket: process.env.PHOTO_BUCKET_NAME!,
                     ContinuationToken: continuationToken,
                 });
 
@@ -89,7 +86,7 @@ export abstract class S3Helper {
             } while (continuationToken);
 
             return allObjects.map(
-                (o) => `https://${EscHelper.secrets!.PHOTO_BUCKET_NAME}.s3.${S3Helper.REGION}.amazonaws.com/${encodeURIComponent(o.Key!)}`,
+                (o) => `https://${process.env.PHOTO_BUCKET_NAME!}.s3.${S3Helper.REGION}.amazonaws.com/${encodeURIComponent(o.Key!)}`,
             );
         } catch (error) {
             console.error("Error listing S3 objects:", error);

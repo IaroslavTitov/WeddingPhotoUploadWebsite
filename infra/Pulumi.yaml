@@ -1,8 +1,24 @@
 name: PhotoUploadSite
 description: A simple site to upload photos into S3
 runtime:
-  name: nodejs
-  options:
-    packagemanager: yarn
-config:
-  aws:region: us-west-2
+    name: nodejs
+    options:
+        packagemanager: yarn
+template:
+    config:
+        aws:region:
+            description: The AWS region to deploy into
+            default: us-west-2
+        websitePassword:
+            description: Password to keep out unwanted guests from your website
+        serviceName:
+            description: The name of AppRunner service
+            default: wedding-photos-webapp
+        websiteTitle:
+            description: The title of the website
+            default: Bob & Alice
+        websiteDescription:
+            description: The description of the website
+            default: >-
+                Welcome to our photo gallery!
+                Here you can upload your pictures from our wedding.
